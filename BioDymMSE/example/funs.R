@@ -1,7 +1,7 @@
 mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window(rec(OM),
     start = start))), CV = 0.3, Ftar = 0.75, Btrig = 0.75, Fmin = Ftar *
     0.1, Blim = Btrig * 1e-04, Bpct = 0.5, Fpct = 0.5, jk = FALSE,
-    bounds = NULL, aLag=1, maxF=0.35){
+    bounds = NULL, aLag=1, maxF=0.35, cthBias=1, srvBias=1){
 
 	#--------------------------------------------------------------------
 	# set year's info  
@@ -39,7 +39,9 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 	#--------------------------------------------------------------------
 
 	# object to register TACs, start year catch taken from OM 
-	TACrec <- catch(bd)
+	PARrec <- catch(bd)
+	PARrec <- FLCore::expand(PARrec, age=c("all", dimnames(params(bd))$params)) # hack to overcome exported method by reshape
+	dimnames(PARrec)[[1]][1] <- "TAC"	
 
 	# assessment years
 	aYrs <- seq(iniPyr, lastPyr, aLag)
@@ -52,15 +54,25 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 			dtaYr <- ac(iYr-1)
 			dtaYrs <- ac((iYr-aLag):(iYr-1))
 			advYrs <- ac((iYr+1):(iYr+aLag)) 
-			# OEM
+
+			# OEM	
 	        bd <- window(bd, end = an(dtaYr))
+	        # abundance index variability
 	        index(bd)[,dtaYrs] <- stock(OM)[,dtaYrs] * rlnorm(prod(dim(index(bd)[,dtaYrs])), 0, CV)
+	        # abundance index bias
+			index(bd)[,dtaYrs] <- index(bd)[,dtaYrs]*runif(length(index(bd)[,dtaYrs]), srvBias*0.95, srvBias*1.05)
+			# catch bias
 	        catch(bd)[,dtaYrs] <- computeCatch(OM)[, dtaYrs]
+	        catch(bd)[,dtaYrs] <- catch(bd)[,dtaYrs]*runif(length(catch(bd)[,dtaYrs]), cthBias*0.95, cthBias*1.05)
+
             # assessment
+browser()
             bd <- admbBD(bd)
+            PARrec[-1, ac(iYr)] <- c(params(bd)) 
+
 			# projections considering TAC was caught in iYr
 			# to deal with a missing feature in fwd the last year of data must also be included
-			ct <- TACrec[,c(dtaYr, iYr)]
+			ct <- PARrec["TAC",c(dtaYr, iYr)]
 			ct[,dtaYr] <- catch(bd)[,dtaYr]
 			bd <- fwd(bd, catch=ct)
 			# HCR
@@ -73,20 +85,22 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 		        hv <- hcr(bd, FLPar(Ftar = Ftar, Btrig = Btrig, Fmin = Fmin, Blim = Blim), lag=2)
 				tac <- TAC(bd, hv) # this is just hv*b
 		    }
-			# update TAC record, all advYrs get the same TAC, may need more options 
-			TACrec[,advYrs] <- c(tac)
-
+			# update TAC record, all advYrs get the same TAC, may need more options
+			PARrec["TAC",advYrs] <- tac[,rep(1, length(advYrs))]
+			
 		    # Project OM
-		    
 		    ctrl <- fwdControl(data.frame(year = an(c(dtaYr, iYr, iYr, rep(advYrs, rep(2, aLag)))), max = NA, quantity = c("catch", rep(c("catch","f"), aLag+1))))
 		    dms <- dimnames(ctrl@trgtArray)
 		    dms$iter <- 1:nits
 		    ctrl@trgtArray <- array(NA, lapply(dms, length), dms)
-			# good place to introduce implementation error ??!!
 		    ctrl@trgtArray[1, "val", ] <- catch(OM)[,ac(dtaYr)]
-		    ctrl@trgtArray[2*(1:(aLag+1)), "val", ] <- TACrec[,c(iYr, advYrs)]
+		    ctrl@trgtArray[2*(1:(aLag+1)), "val", ] <- PARrec["TAC",c(iYr, advYrs)]
+			# catch will be corrected by the bias level introduced on the OEM ?!
+			# There may be better options like linking through effort
+			ctrl@trgtArray[2*(1:(aLag+1)), "val", ] <- ctrl@trgtArray[2*(1:(aLag+1)), "val", ]/runif(length(ctrl@trgtArray[2*(1:(aLag+1)), "val", ]), cthBias*0.95, cthBias*1.05)
+			# this limit on F should be in the management loop not here !?
 		    ctrl@trgtArray[2*(1:(aLag+1))+1, "max", ] <- maxF
-			# OM projection, need to check if the residuals are being allocated correcly
+			# OM projection
 		    OM <- fwd(OM, ctrl = ctrl, sr = sr, sr.residuals = srRsdl) 
 
 		} else {
@@ -94,7 +108,7 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 	        cat("=============== No assessment ==============\n")
 		}
     }
-	attr(OM, "TAC") <- TACrec
+	attr(OM, "PARs") <- PARrec
     return(OM)
 }
 
@@ -105,7 +119,19 @@ setGeneric("an", function(object) standardGeneric("an"))
 setMethod("an", "character", function(object) as.numeric(object))
 setMethod("an", "factor", function(object) as.numeric(as.character(object)))
 
-
+setMethod("simAR", "FLQuant", function (object, nits, start = dims(object)$minyear, end = dims(object)$maxyear, n = 1, cv=sd(object)) 
+    {
+        arobject = acf(c(object), lag.max = n)
+        plot(arobject)
+        cvobject = cv
+        objectRsdl = window(object, end = end)
+        objectRsdl[] = 0
+        objectRsdl = log(rlnorm(nits, objectRsdl, cvobject))
+        for (i in end:(dims(objectRsdl)$minyear + n)) objectRsdl[, 
+            ac(i)] = apply(sweep(objectRsdl[, rev(ac(i - 1:n))], 
+            2, arobject$acf[n:1], "*"), 6, sum)
+        return(objectRsdl)
+    })
 
 
 

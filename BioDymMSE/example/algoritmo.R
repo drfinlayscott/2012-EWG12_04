@@ -24,9 +24,9 @@ source("funs.R")
 # General settings
 #====================================================================
 
-nits <- 1000				# number of iterations
+nits <- 5				# number of iterations
 iniyr <- 2009 			# first year in projections
-lastyr <- 2200 			# last year in projections
+lastyr <- 2059 			# last year in projections
 npyr <- lastyr-iniyr+1 	# number of years to project
 srsd <- 0.3 			# sd for S/R
 
@@ -50,8 +50,12 @@ srBHAR1 <- fmle(as.FLSR(om,model="bevholtAR1"))
 srSG <- fmle(as.FLSR(om,model="segreg"))
 srGM <- fmle(as.FLSR(om,model="geomean"))
     
-# Residuals - simulate residuals as lognormal with sd=0.3
-srRsdl <- FLQuant(rlnorm(npyr*nits, 0, srsd), dimnames=list(year=(iniyr-1):lastyr, iter=1:nits)) 
+# Residuals - simulate residuals as lognormal with sd=srsd
+# I use a hacked simAR method to control residuals cv
+set.seed(123)
+srRsdl <- FLQuant(rlnorm(npyr*nits, 0, srsd), dimnames=list(year=srBH@range["minyear"]:lastyr, iter=1:nits)) 
+set.seed(123)
+srRsdlAR <- exp(simAR(residuals(srBH), nits, end=lastyr, cv=srsd))
 
 #--------------------------------------------------------------------
 # BRPs
@@ -71,7 +75,7 @@ omBrp <- FLBRPs(llply(omBrp, function(x) {
 #--------------------------------------------------------------------
 
 # window with FLBRP expands the object including weights, etc, the 
-# brp doesn't seem to do anything except dispatching. it replaces "stf" 
+# brp doesn't seem to do anything except dispatching. it replaces "stf". 
 OM <- window(om, FLBRP=omBrp[[1]], end=lastyr)
 
 # trick to get iterations, start with M and fwd will add to other slots
@@ -124,8 +128,19 @@ res3 <- mlply(scn, function(Btrig, CV, Ftar)
 
 set.seed(123)
 res4 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srBHAR1, srRsdl, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
+	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
 
+set.seed(123)
+res4.bias1 <- mlply(scn, function(Btrig, CV, Ftar) 
+	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
+
+set.seed(123)
+res5 <- mlply(scn, function(Btrig, CV, Ftar) 
+	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5, cthBias=0.5))
+
+set.seed(123)
+res6 <- mlply(scn, function(Btrig, CV, Ftar) 
+	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5, srvBias=0.5))
 
 #====================================================================
 # proj without management loop            
