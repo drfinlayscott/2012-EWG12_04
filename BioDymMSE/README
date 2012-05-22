@@ -1,0 +1,4 @@
+Code for development of MSE analysis to support the STECF EWG 12 04, dealing with the international dimensions of the CFP.
+
+To run the code it's necessary to install the development version of FLR. You can run install.packages(repos="http://flr-project.org/Rdevel") from within your R session (R>2.13.0). Or just contact me <ernesto.jardim@jrc.ec.europa.eu>.
+

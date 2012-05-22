@@ -1,0 +1,29 @@
+Terms of Reference
+
+STECF is requested:
+
+1) To discuss the concept of "surplus", based on the definition given in UNCLOS and taking into account the specific context of
+1.1) shared stocks (e.g. small pelagic species on the Western African coast);
+1.2) transitional periods of time, before having reached reference management points (e.g; how to consider the surplus if indicators of a specific fishery are still not at the management reference values agreed by fisheries policy makers and managers ?);
+
+The issue with the computation of "surplus" is well described on UNCLOS and it can be boiled down to: 1) define MSY, 2) compute coastal state catches (C), 3) surplus if the difference between the two, S=MSY-C. There are (at least) three problems with this formulation that should be considered to reply to the ToR: 
+
+(a) How well can MSY and partial catches be estimated, if at all possible (see 3 below).
+(b) If the stock is overexploited how can the transtition phase be managed, does the coastal state keeps the catches and third countries reduce their own ? does the coastal state and third countries reduce proportionaly ? what if the coastal state catches are already above MSY ? I guess the idea here is to present options and not so much to give advice, it's mainly a political problem. 
+(c) The notion that taking the surplus does not affect the coastal state. We may be in a position to simulate some scenarios and try to get some insight into this subject. We need to have a set of clear questions we'd like to reply, e.g. if the third country takes its share before the coastal state starts fishing what will hapen in terms of CPUE for the coastal state ? Can you please send your questions until the 4th of May, we'll try to set up the simulations and come back to you with doubts and/or preliminary results.    
+
+2) To discuss assessment models, indicators and management references points used for stocks of small pelagic and demersal species distributed in Western African Waters or in Waters of the Gulf of Guinea;
+
+ICES did a very detailed report on stock assessment models, where it's described which data each model uses and which results it provides. For this task is a matter of adjusting the ICES report to the reality of CECAF in terms of stocks, data and human resources. Another interesting result could be a recommendation on best practices to report stock assessment analysis. It should take into account replicability and support to management advice, like reporting model fit, sensitivity analysis, etc.  
+
+3) To suggest possible methods to evaluate surplus values, depending on
+3.1) the type of data available
+3.2) the type of assessment models used (e.g. such methods should distinguish between poor-data stocks and stocks where assessment would have been delivered using surplus production models or analytical models).
+
+The real problem is not so much the method to estimate surplus (see 1) but the quality of the estimate. If MSY is not well estimated due to assessment uncertainty, or if catch of the coastal state is not well estimated do to poor statistics, what should be done ? This can be simulated and tested to get some insights on the impact uncertainties may have on the surplus estimate. The problem is time to code, run and analyse. 
+
+4) To deliver some first calculations, particularly for mixed FPAs of the Western African area.
+
+DGMARE was requested to decide on 2 or 3 stocks that can be used as examples and provide the background material for this task.
+
+

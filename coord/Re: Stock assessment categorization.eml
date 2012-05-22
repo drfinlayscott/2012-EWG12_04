@@ -1,0 +1,182 @@
+Return-path: <scadrin@umassd.edu>
+Received: from irelay.jrc.it ([unknown] [139.191.254.63])
+ by mail-zone.jrc.it (Sun Java(tm) System Messaging Server 7.3-11.01 64bit
+ (built Sep  1 2009)) with ESMTP id <0M44001LI7H7ZU50@mail-zone.jrc.it> for
+ gamitjo@mail-zone.jrc.it; Wed, 16 May 2012 14:17:31 +0200 (CEST)
+Original-recipient: rfc822;gamitjo@mail-zone.jrc.it
+Received: from mx4.jrc.it (mx4.jrc.it [139.191.244.22])
+ by irelay.jrc.it (LMC5614Ainternal) with SMTP id q4GCHUi6007804 for
+ <ernesto.jardim@jrc.ec.europa.eu>; Wed, 16 May 2012 14:17:30 +0200 (MEST)
+Received: from umdmail4.umassd.edu (umdmail4.umassd.edu [134.88.3.196])
+	by mx4.jrc.it (LMC5614Amx1) with ESMTP id q4GCHF0r017586	for
+ <ernesto.jardim@jrc.ec.europa.eu>; Wed, 16 May 2012 14:17:21 +0200 (CEST)
+Received: from umdmail4.umassd.edu (umdmail4.umassd.edu [127.0.0.1])
+	by localhost (Postfix) with SMTP id C38E949004D; Wed,
+ 16 May 2012 08:16:08 -0400 (EDT)
+Received: from umdmailz-1.UMassD.Edu (umdmailz-1.umassd.edu [134.88.3.185])
+	by umdmail4.umassd.edu (Postfix) with ESMTP id 6335C490044; Wed,
+ 16 May 2012 08:16:08 -0400 (EDT)
+Received: from zimbra-mb2.umassd.edu (zimbra-mb2.umassd.edu [134.88.1.217])
+	by umdmailz-1.UMassD.Edu (Postfix) with ESMTP id 94964A0D74; Wed,
+ 16 May 2012 08:16:07 -0400 (EDT)
+Date: Wed, 16 May 2012 08:16:08 -0400 (EDT)
+From: Steve Cadrin <scadrin@umassd.edu>
+To: Ernesto Jardim <ernesto.jardim@jrc.ec.europa.eu>
+Cc: "mark.dickeycollas@wur.nl" <mark.dickeycollas@wur.nl>
+Message-id: <11653547.3420492.1337170568320.JavaMail.root@zimbra-mb2>
+In-reply-to: <4FB36E1C.8090509@jrc.ec.europa.eu>
+Subject: Re: Stock assessment categorization
+MIME-version: 1.0
+Content-type: multipart/alternative;
+ boundary="----=_Part_3420491_22019603.1337170568319"
+X-Originating-IP: [146.87.102.47]
+X-Mailer: Zimbra 7.1.4_GA_2555 (ZimbraWebClient - FF3.0 (Win)/7.1.4_GA_2555)
+X-Seen-By: PureMessage
+X-Perlmx-Spam: Gauge=IIIIIIII, Probability=8%, Report=' HTML_NO_HTTP 0.1,
+ SUPERLONG_LINE 0.05, BODYTEXTH_SIZE_10000_LESS 0, BODYTEXTP_SIZE_3000_LESS 0,
+ BODY_SIZE_6000_6999 0, BODY_SIZE_7000_LESS 0, FROM_EDU_TLD 0,
+ INVALID_MSGID_NO_FQDN 0, WEBMAIL_SOURCE 0, WEBMAIL_XOIP 0, WEBMAIL_X_IP_HDR 0,
+ __ANY_URI 0, __BOUNCE_CHALLENGE_SUBJ 0, __BOUNCE_NDR_SUBJ_EXEMPT 0,
+ __CP_URI_IN_BODY 0, __CT 0, __CTYPE_HAS_BOUNDARY 0, __CTYPE_MULTIPART 0,
+ __CTYPE_MULTIPART_ALT 0, __HAS_HTML 0, __HAS_MSGID 0, __HAS_XOIP 0,
+ __HAS_X_MAILER 0, __MIME_HTML 0, __MIME_VERSION 0, __SANE_MSGID 0,
+ __STOCK_PHRASE_6 0, __TAG_EXISTS_HTML 0, __TO_MALFORMED_2 0, __URI_NO_WWW 0,
+ __URI_NS '
+X-Spam-Status: No, score=0.2 required=200.0 tests=AWL,HTML_MESSAGE,
+	SPF_HELO_PASS,SPF_PASS autolearn=disabled version=3.2.0
+X-Spam-Checker-Version: SpamAssassin 3.2.0 (2007-05-01) on mx4
+
+------=_Part_3420491_22019603.1337170568319
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Ernesto:=20
+
+I hope that you are well. Your meeting sounds interesting.=20
+
+from my perspective, the SISAM categorization was developed to encourage ap=
+propriate application of methods, so we should welcome such references. As =
+you wrote, it has not been published yet, but I suggest that you reference =
+ICES Strategic Initiative on Stock Assessment Methods (SISAM) and the sympo=
+sium website (http://ices.dk/iceswork/symposia/wcsam.asp) to credit the peo=
+ple involved and help advertise the symposium.=20
+
+Thanks,=20
+Steve=20
+
+----- Original Message -----
+
+From: "Ernesto Jardim" <ernesto.jardim@jrc.ec.europa.eu>=20
+To: scadrin@umassd.edu, "mark.dickeycollas@wur.nl" <mark.dickeycollas@wur.n=
+l>=20
+Sent: Wednesday, May 16, 2012 5:06:36 AM=20
+Subject: Stock assessment categorization=20
+
+Dear Steve and Mark,=20
+
+I will chair a STECF meeting on the UNCLOS "surplus" concept and it's=20
+application on the CFP (see ToR below or at=20
+http://stecf.jrc.ec.europa.eu/web/stecf/ewg04). One of our tasks is to=20
+advice on stock assessment methods and my idea is to use the=20
+categorization you're preparing under SISAM and adjust it to the CECAF,=20
+GFCM realities.=20
+
+My problem is that I don't see it published and I'd like to reference it=20
+properly and give the credits to those who deserve them. How can we do it ?=
+=20
+
+Best=20
+
+EJ=20
+
+Terms of Reference=20
+
+STECF is requested:=20
+
+To discuss the concept of "surplus", based on the definition given in=20
+UNCLOS texts and taking into account the specific context of=20
+shared stocks (e.g. small pelagic species on the Western African coast);=20
+transitional periods of time, before having reached reference management=20
+points (e.g; how to consider the surplus if indicators of a specific=20
+fishery are still not at the management reference values agreed by=20
+fisheries policy makers and managers ?);=20
+To discuss assessment models, indicators and management references=20
+points used for stocks of small pelagic and demersal species distributed=20
+in Western African Waters or in Waters of the Gulf of Guinea;=20
+To suggest possible methods to evaluate surplus values, depending on=20
+the type of data available=20
+the type of assessment models used (e.g. such methods should distinguish=20
+between poor-data stocks and stocks where assessment would have been=20
+delivered using surplus production models or analytical models).=20
+To deliver some first calculations, particularly for mixed FPAs of the=20
+Western African area.=20
+
+
+
+
+
+--=20
+Ernesto Jardim<ernesto.jardim@jrc.ec.europa.eu>=20
+Scientific Officer=20
+FISHREG =E2=80=93 Scientific Support to Fisheries=20
+IPSC Maritime Affairs Unit=20
+EC Joint Research Center=20
+TP 051, Via Enrico Fermi 2749=20
+I-21027 Ispra (VA), Italy=20
+Office : +39 0332 785311=20
+Fax: +39 0332 789658=20
+http://fishreg.jrc.ec.europa.eu/=20
+
+
+
+
+
+------=_Part_3420491_22019603.1337170568319
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><style type=3D'text/css'>p { margin: 0; }</style></head><body><=
+div style=3D'font-family: arial,helvetica,sans-serif; font-size: 12pt; colo=
+r: #000000'>Hi Ernesto:<br><br>I hope that you are well.&nbsp; Your meeting=
+ sounds interesting.<br><br>from my perspective, the SISAM categorization w=
+as developed to encourage appropriate application of methods, so we should =
+welcome such references.&nbsp; As you wrote, it has not been published yet,=
+ but I suggest that you reference ICES Strategic Initiative on Stock Assess=
+ment Methods (SISAM) and the symposium website (http://ices.dk/iceswork/sym=
+posia/wcsam.asp) to credit the people involved and help advertise the sympo=
+sium.<br><br>Thanks,<br>Steve<br><br><hr id=3D"zwchr"><div style=3D"color:#=
+000;font-weight:normal;font-style:normal;text-decoration:none;font-family:H=
+elvetica,Arial,sans-serif;font-size:12pt;"><b>From: </b>"Ernesto Jardim" &l=
+t;ernesto.jardim@jrc.ec.europa.eu&gt;<br><b>To: </b>scadrin@umassd.edu, "ma=
+rk.dickeycollas@wur.nl" &lt;mark.dickeycollas@wur.nl&gt;<br><b>Sent: </b>We=
+dnesday, May 16, 2012 5:06:36 AM<br><b>Subject: </b>Stock assessment catego=
+rization<br><br>Dear Steve and Mark,<br><br>I will chair a STECF meeting on=
+ the UNCLOS "surplus" concept and it's <br>application on the CFP (see ToR =
+below or at <br>http://stecf.jrc.ec.europa.eu/web/stecf/ewg04). One of our =
+tasks is to <br>advice on stock assessment methods and my idea is to use th=
+e <br>categorization you're preparing under SISAM and adjust it to the CECA=
+F, <br>GFCM realities.<br><br>My problem is that I don't see it published a=
+nd I'd like to reference it <br>properly and give the credits to those who =
+deserve them. How can we do it ?<br><br>Best<br><br>EJ<br><br>Terms of Refe=
+rence<br><br>STECF is requested:<br><br>To discuss the concept of "surplus"=
+, based on the definition given in <br>UNCLOS texts and taking into account=
+ the specific context of<br>shared stocks (e.g. small pelagic species on th=
+e Western African coast);<br>transitional periods of time, before having re=
+ached reference management <br>points (e.g; how to consider the surplus if =
+indicators of a specific <br>fishery are still not at the management refere=
+nce values agreed by <br>fisheries policy makers and managers ?);<br>To dis=
+cuss assessment models, indicators and management references <br>points use=
+d for stocks of small pelagic and demersal species distributed <br>in Weste=
+rn African Waters or in Waters of the Gulf of Guinea;<br>To suggest possibl=
+e methods to evaluate surplus values, depending on<br>the type of data avai=
+lable<br>the type of assessment models used (e.g. such methods should disti=
+nguish <br>between poor-data stocks and stocks where assessment would have =
+been <br>delivered using surplus production models or analytical models).<b=
+r>To deliver some first calculations, particularly for mixed FPAs of the <b=
+r>Western African area.<br><br><br><br><br><br>-- <br>Ernesto Jardim&lt;ern=
+esto.jardim@jrc.ec.europa.eu&gt;<br>Scientific Officer<br>FISHREG =E2=80=93=
+ Scientific Support to Fisheries<br>IPSC Maritime Affairs Unit<br>EC Joint =
+Research Center<br>TP 051, Via Enrico Fermi 2749<br>I-21027 Ispra (VA), Ita=
+ly<br>Office : +39 0332 785311<br>Fax: +39 0332 789658<br>http://fishreg.jr=
+c.ec.europa.eu/<br><br><br><br></div><br></div></body></html>
+------=_Part_3420491_22019603.1337170568319--

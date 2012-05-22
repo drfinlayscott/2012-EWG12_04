@@ -1,0 +1,45 @@
+Parameter (unit),Value,Source
+Growth:   L(t)=L∞(1−e−k(t−t0)),,
+ L∞ (cm),30.63,Boëly et al. (1982a)
+ k (year−1),1.206,
+ t0 (year),−0.062,
+,,
+Mortality rate vector (see text),,
+ Age (year),(0.5; 1.0; 1.5; 2.0; 2.5; 3.0; 3.5; 4.0; 4.5; 5.0; 5.5; 6.0),
+ Mortality (%),(0.8; 0.7; 0.6; 0.4; 0.4; 0.4; 0.6; 0.6; 0.9; 0.9; 0.9; 0.9),
+,,
+Longevity (year),6,Maxim and Maxim (1988)
+,,
+"Length–weight relationship: W = aLb (W, weight in g)",,
+ a,6.392E−3,"Fréon et al., 1979"
+ b,3.274,
+,,
+Body length at first maturity (cm),21,"Conand (1977a), 
+                  [Boëly et al., 1982a] and [Boëly et al., 1982b] (mean of various estimates)"
+Body length at second maturity (cm),26,
+,,
+Sexual rest (months),4,Conand (1977a)
+,,
+Adults max. spawning (n times/year),4,Fontana (1969)
+,,
+"Fecundity (×1E3 eggs per female) F = cW − d (W, weight in g)",,
+ c,0.401,Conand (1977b)
+ d,45.197,
+,,
+Larvae survival,0.1,See text
+,,
+Sex ratio vector,,
+ Age (years),(2; 4; 6),
+ Sex-ratio,(0.6; 0.7; 0.8),
+,,
+Parameter calibrated,Value obtained,Published data
+Migration,,
+ Cruising speed,11.6 nm/d,3–24 nm/d (see text)
+ Optimal temperature interval [θoptimal],21°–25 °C,"15–21 °C (Schmidt, 1972), 20–24 °C (Pauly, 1994) 14.5–30 °C (Demidov, 1962)"
+,,
+Spawning,,
+ Minimum coastal upwelling index,0.8 m3/s/m,N/A
+ Optimal wind speed window,5.5–6.6 m/s,"5–6 m/s (Cury and Roy, 1989)"
+,,
+Competition,,
+ CUI multiplier (carrying capacity),30 × 108 ind/m3/s/m,N/A
