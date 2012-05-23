@@ -1,7 +1,7 @@
 mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window(rec(OM),
     start = start))), CV = 0.3, Ftar = 0.75, Btrig = 0.75, Fmin = Ftar *
     0.1, Blim = Btrig * 1e-04, Bpct = 0.5, Fpct = 0.5, jk = FALSE,
-    bounds = NULL, aLag=1, maxF=0.35, cthBias=1, srvBias=1){
+    bounds = NULL, aLag=1, maxHR=0.35, maxF=max(fbar(OM))*1.1, cthBias=1, srvBias=1){
 
 	#--------------------------------------------------------------------
 	# set year's info  
@@ -66,7 +66,6 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 	        catch(bd)[,dtaYrs] <- catch(bd)[,dtaYrs]*runif(length(catch(bd)[,dtaYrs]), cthBias*0.95, cthBias*1.05)
 
             # assessment
-browser()
             bd <- admbBD(bd)
             PARrec[-1, ac(iYr)] <- c(params(bd)) 
 
@@ -81,8 +80,10 @@ browser()
 		        warning("Using jk hcr requires checking.", immediate.=T)
 		    } else {
 		    	# the lag on the hcr method is between the advice year and the data year,
-		    	# so in the traditional "assessments evry year" it's 2
+		    	# so in the traditional "assessments every year" it's 2
 		        hv <- hcr(bd, FLPar(Ftar = Ftar, Btrig = Btrig, Fmin = Fmin, Blim = Blim), lag=2)
+				# check F is not above maxF and replace if it is
+				hv[hv>maxF] <- maxHR
 				tac <- TAC(bd, hv) # this is just hv*b
 		    }
 			# update TAC record, all advYrs get the same TAC, may need more options

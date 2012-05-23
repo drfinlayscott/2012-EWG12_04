@@ -1,0 +1,56 @@
+\documentclass[a4paper]{article}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{amsmath}
+\usepackage[bottom]{footmisc}
+\geometry{verbose,a4paper,tmargin=3cm,bmargin=2cm,lmargin=2cm,rmargin=3cm}
+%\SweaveOpts{width=5.5, height=5.5}
+\setlength{\parskip}{\medskipamount}
+\setlength{\parindent}{0pt}
+\begin{document}
+\title{Surplus tests with MSE}
+\author{Ernesto Jardim\footnote{ernesto.jardim@jrc.ec.europa.eu} (JRC)\\ Iago Mosqueira (JRC) \\ Colin Millar (JRC)\\ Chato Osio (JRC)\\ Aymen Charef (JRC)}
+\maketitle
+\begin{abstract}
+ToDo
+\end{abstract} 
+
+\pagebreak
+\section{Introduction}
+
+The MSE runs on the ple4 dataset but it can be adapted to other datasets. The OM is conditioned using the stock assessment results and distinct S/R. The MP is based on the usual MSY HCR, with a $B_{trigger}$ and a $F_{target}$, and an additional harvest rate limit. All is dealt in relative terms. The stock status is estimated with a biomass dynamic model. The OEM introduces variability on the abundance index and bias both on the abundance index and catches. The IEM introduces bias on the catch. The bias on catch, both on the OEM and IEM must be linked so that catches on the OM are of the same level.
+
+\section{Methods}
+
+\begin{itemize}
+	\item Operating Model
+
+	$N_{t+1,a+1}=N_{t,a}e^{-Z}$
+	
+	$R_{t+1}=f(S_{t})\rho$ where $\rho \sim LN(0,\sigma_{R}^2)$ and $f$:{segreg,b\&h,b\&h+AR1}
+
+	$C_{t,a}=\frac{F_{t,a}}{Z_{t,a}}(1-e^{-Z})N_{t,a}$
+	
+	$Y_{t}=\sum_a C_{t,a}\bar{W}_{t,a}$
+	
+	\item Implementation Error Model
+	
+	$Y_{t}=\frac{TAC_{t}}{\alpha_{t}}$
+
+	\item Management Procedure
+	
+	$TAC_{t}=HCR(\hat{\Theta}_{t} | F_{trgt}, B_{trg}, HR_{max})$
+	
+	$\hat{\Theta}=g(\hat{C}_{t}, \hat{I}_{t})$ where $g$: biomass dynamic model 
+	
+	\item Observation Error Model
+	
+	$\hat{C}_{t}=C_{t} \alpha_{t}$ where $\alpha \sim U(0.95cthBias, 1.05cthBias)$
+	
+	$\hat{I}_{t} = B_{t} \gamma_{t}$ where $\gamma \sim LN(\lambda, \sigma_{I}^2)$ and $\lambda \sim U(0.95srvBias, 1.05srvBias)$	
+		
+\end{itemize}	 
+
+\end{document}
+

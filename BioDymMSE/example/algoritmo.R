@@ -24,7 +24,7 @@ source("funs.R")
 # General settings
 #====================================================================
 
-nits <- 5				# number of iterations
+nits <- 250				# number of iterations
 iniyr <- 2009 			# first year in projections
 lastyr <- 2059 			# last year in projections
 npyr <- lastyr-iniyr+1 	# number of years to project
@@ -81,7 +81,7 @@ OM <- window(om, FLBRP=omBrp[[1]], end=lastyr)
 # trick to get iterations, start with M and fwd will add to other slots
 m(OM) <- propagate(m(OM),nits)
 
-# project to the end of projections at Fsq
+# project to the end of projections at last year F level
 ctrl <- fwdControl(data.frame(year=iniyr:lastyr, quantity="f", val=c(fbar(om)[,ac(om@range["maxyear"])])*rep(1,npyr)))
 OM <- fwd(OM, ctrl=ctrl, sr=srBHAR1, sr.residuals=srRsdl)
 plot(OM)
@@ -100,7 +100,7 @@ bounds["q",    1]      =1.0
 bounds["b0",   c("phase","start")]=c(-1,0.2)
 bounds[,"lower"]=bounds[,"start"]*0.1
 bounds[,"upper"]=bounds[,"start"]*10.0
-bounds["p",    c("phase","lower","upper","start")] = c(1,0.9,1.1,1)
+bounds["p",    c("phase","lower","upper","start")] = c(1,1,1.1,1)
 
 #====================================================================
 # Scenarios and simulations
@@ -111,7 +111,7 @@ scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1)
 
 # MSE
 set.seed(123)
-res0 <- mlply(scn, function(Btrig, CV, Ftar) 
+res00 <- mlply(scn, function(Btrig, CV, Ftar) 
 	mseBD(OM, iniyr, sr=srSG, srRsdl, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=1))
 
 set.seed(123)
@@ -127,11 +127,7 @@ res3 <- mlply(scn, function(Btrig, CV, Ftar)
 	mseBD(OM, iniyr, sr=srBH, srRsdl, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
 
 set.seed(123)
-res4 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
-
-set.seed(123)
-res4.bias1 <- mlply(scn, function(Btrig, CV, Ftar) 
+res40 <- mlply(scn, function(Btrig, CV, Ftar) 
 	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
 
 set.seed(123)
@@ -141,6 +137,22 @@ res5 <- mlply(scn, function(Btrig, CV, Ftar)
 set.seed(123)
 res6 <- mlply(scn, function(Btrig, CV, Ftar) 
 	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5, srvBias=0.5))
+
+# new code with control on HR and limit on F
+set.seed(123)
+res7 <- mlply(scn, function(Btrig, CV, Ftar) 
+	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
+
+
+
+
+
+plot(FLStocks(lag1=res0[[1]], lag3=res1[[1]], lag5=res2[[1]]))
+plot(FLStocks(sg=res2[[1]], bh=res3[[1]], bhAR=res4[[1]]))
+plot(FLStocks(nobias=res4[[1]], cthBias0.5=res5[[1]], srvBias0.5=res6[[1]]))
+
+
+
 
 #====================================================================
 # proj without management loop            
