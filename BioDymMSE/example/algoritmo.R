@@ -18,6 +18,10 @@
 
 library(FLAdvice)
 library(FLBioDym)
+library(multicore)
+library(foreach)
+library(doMC)
+registerDoMC(4)
 source("funs.R")
 
 #====================================================================
@@ -26,7 +30,7 @@ source("funs.R")
 
 nits <- 250				# number of iterations
 iniyr <- 2009 			# first year in projections
-lastyr <- 2059 			# last year in projections
+lastyr <- 2039 			# last year in projections
 npyr <- lastyr-iniyr+1 	# number of years to project
 srsd <- 0.3 			# sd for S/R
 
@@ -107,63 +111,21 @@ bounds["p",    c("phase","lower","upper","start")] = c(1,1,1.1,1)
 #====================================================================
 
 # scenarios
-scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1)
+scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(1,0.5), cthBias=c(1,0.5))
 
-# MSE
-set.seed(123)
-res00 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srSG, srRsdl, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=1))
+lst <- split(scn, scn)
+for(i in 1:nrow(scn)){
+	lst[[i]] <- mseBD(OM=OM, start=iniyr, sr=srBHAR1, srRsdl=srRsdlAR, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"])
 
-set.seed(123)
-res1 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srSG, srRsdl, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=3))
-
-set.seed(123)
-res2 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srSG, srRsdl, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
-
-set.seed(123)
-res3 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srBH, srRsdl, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
-
-set.seed(123)
-res40 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
-
-set.seed(123)
-res5 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5, cthBias=0.5))
-
-set.seed(123)
-res6 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5, srvBias=0.5))
-
-# new code with control on HR and limit on F
-set.seed(123)
-res7 <- mlply(scn, function(Btrig, CV, Ftar) 
-	mseBD(OM, iniyr, sr=srBHAR1, srRsdlAR, CV=CV, Btrig=Btrig, Ftar=Ftar, bounds=bounds, aLag=5))
+}
 
 
-
-
-
-plot(FLStocks(lag1=res0[[1]], lag3=res1[[1]], lag5=res2[[1]]))
-plot(FLStocks(sg=res2[[1]], bh=res3[[1]], bhAR=res4[[1]]))
-plot(FLStocks(nobias=res4[[1]], cthBias0.5=res5[[1]], srvBias0.5=res6[[1]]))
-
-
-
-
-#====================================================================
-# proj without management loop            
-#====================================================================
-
-OMs <- FLStocks()
-OMs[[1]] <- fwd(OM, ctrl=ctrl, sr=srs[["Mean"]], sr.residuals=srRsdl)
-OMs[[2]] <- fwd(OM, ctrl=ctrl, sr=srs[["Mean"]], sr.residuals=srRsdlAR)
-OMs[[3]] <- fwd(OM, ctrl=ctrl, sr=srs[["Hockey Stick"]], sr.residuals=srRsdl)
-OMs[[4]] <- fwd(OM, ctrl=ctrl, sr=srs[["Hockey Stick"]], sr.residuals=srRsdlAR)
-names(OMs)=1:4
+# paralel
+res0 <- foreach(i = 1:nrow(scn), .packages=c("FLCore", "FLash", "FLEDA", "MASS", "FLBioDym", "FLAdvice", "plyr"), .export="an") %dopar% mseBD(OM=OM, start=iniyr, sr=srBHAR1, srRsdl=srRsdlAR, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"])
 
 q("yes")
+
+
+
+
 

@@ -1,7 +1,7 @@
 mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window(rec(OM),
     start = start))), CV = 0.3, Ftar = 0.75, Btrig = 0.75, Fmin = Ftar *
     0.1, Blim = Btrig * 1e-04, Bpct = 0.5, Fpct = 0.5, jk = FALSE,
-    bounds = NULL, aLag=1, maxHR=0.35, maxF=max(fbar(OM))*1.1, cthBias=1, srvBias=1){
+    bounds = NULL, aLag=1, maxHR=0.35, maxF=max(fbar(OM))*1.1, cthBias=1, srvBias=1, seed=1234){
 
 	#--------------------------------------------------------------------
 	# set year's info  
@@ -17,6 +17,7 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 	#	advYr - advice year, the year for which advice is being given (loop)     
 	#--------------------------------------------------------------------
 
+	set.seed(seed)
 	iniPyr <- start
 	lastPyr <- OM@range["maxyear"]
 	nPyr <- lastPyr-iniPyr+1
@@ -65,6 +66,7 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 	        catch(bd)[,dtaYrs] <- computeCatch(OM)[, dtaYrs]
 	        catch(bd)[,dtaYrs] <- catch(bd)[,dtaYrs]*runif(length(catch(bd)[,dtaYrs]), cthBias*0.95, cthBias*1.05)
 
+            # MP
             # assessment
             bd <- admbBD(bd)
             PARrec[-1, ac(iYr)] <- c(params(bd)) 
@@ -89,7 +91,7 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 			# update TAC record, all advYrs get the same TAC, may need more options
 			PARrec["TAC",advYrs] <- tac[,rep(1, length(advYrs))]
 			
-		    # Project OM
+		    # IEM
 		    ctrl <- fwdControl(data.frame(year = an(c(dtaYr, iYr, iYr, rep(advYrs, rep(2, aLag)))), max = NA, quantity = c("catch", rep(c("catch","f"), aLag+1))))
 		    dms <- dimnames(ctrl@trgtArray)
 		    dms$iter <- 1:nits
@@ -99,9 +101,10 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 			# catch will be corrected by the bias level introduced on the OEM ?!
 			# There may be better options like linking through effort
 			ctrl@trgtArray[2*(1:(aLag+1)), "val", ] <- ctrl@trgtArray[2*(1:(aLag+1)), "val", ]/runif(length(ctrl@trgtArray[2*(1:(aLag+1)), "val", ]), cthBias*0.95, cthBias*1.05)
+
+			# OM
 			# this limit on F should be in the management loop not here !?
 		    ctrl@trgtArray[2*(1:(aLag+1))+1, "max", ] <- maxF
-			# OM projection
 		    OM <- fwd(OM, ctrl = ctrl, sr = sr, sr.residuals = srRsdl) 
 
 		} else {
