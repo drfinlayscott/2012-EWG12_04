@@ -18,10 +18,11 @@
 
 library(FLAdvice)
 library(FLBioDym)
+library(plyr)
 library(multicore)
 library(foreach)
 library(doMC)
-registerDoMC(4)
+registerDoMC(3)
 source("funs.R")
 
 #====================================================================
@@ -111,21 +112,29 @@ bounds["p",    c("phase","lower","upper","start")] = c(1,1,1.1,1)
 #====================================================================
 
 # scenarios
-scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(1,0.5), cthBias=c(1,0.5))
+scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM=c("linear", "cst"))
 
-lst <- split(scn, scn)
+MSEsims01 <- split(scn, scn)
 for(i in 1:nrow(scn)){
-	lst[[i]] <- mseBD(OM=OM, start=iniyr, sr=srBHAR1, srRsdl=srRsdlAR, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"])
+	MSEsims01[[i]] <- mseBD(OM=OM, start=iniyr, sr=srBHAR1, srRsdl=srRsdlAR, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"])
 
 }
 
 
 # paralel
-res0 <- foreach(i = 1:nrow(scn), .packages=c("FLCore", "FLash", "FLEDA", "MASS", "FLBioDym", "FLAdvice", "plyr"), .export="an") %dopar% mseBD(OM=OM, start=iniyr, sr=srBHAR1, srRsdl=srRsdlAR, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"])
+res0 <- foreach(i = 1:nrow(scn), .packages=c("FLCore", "FLash", "FLEDA", "MASS", "FLBioDym", "FLAdvice", "plyr"), .export="an") %dopar% mseBD(OM=OM, start=iniyr, sr=srBHAR1, srRsdl=srRsdlAR, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"])
 
-q("yes")
+#====================================================================
+# Analysis of results
+#====================================================================
 
+MSEsumm01 <- mseSumm(MSEsims01, scn)
 
+xyplot(data~factor(year)|par, groups=qtl, data=subset(MSEsumm01, runid==13), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(lty=c(2,1,2), col=c(2,1,2))), type="l")
+
+xyplot(data~factor(year), groups=par, data=subset(MSEsumm01, runid==13 & par %in% c("TAC", "catch") & qtl==0.5), type="l")
+
+xyplot(data~factor(year)|scn, groups=par, data=subset(MSEsumm01, runid<19 & par %in% c("TAC", "catch") & qtl==0.5 & year > 2000), type="l", par.strip.text=list(cex=0.3))
 
 
 

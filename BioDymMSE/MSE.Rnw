@@ -24,9 +24,10 @@ The MSE runs on the ple4 dataset but it can be adapted to other datasets. The OM
 <<echo=FALSE, results=hide>>=
 library(FLAdvice)
 library(FLBioDym)
+library(plyr)
 library(xtable)
 library(Hmisc)
-load("example/.RData")
+load("example/RData.1strun")
 source("example/funs.R")
 @
 
@@ -34,6 +35,7 @@ source("example/funs.R")
 sessionInfo()
 @
 
+\pagebreak
 \section{Methods}
 
 \begin{itemize}
@@ -49,7 +51,13 @@ sessionInfo()
 	
 	\item Implementation Error Model
 	
-	$Y_{t}=\frac{TAC_{t}}{\alpha_{t}}$
+	$Y_{t}=\frac{TAC_{t}}{\beta_{t}}$ where $\beta \sim U(0.95\eta, 1.05\eta)$ 
+	
+	$\eta=a+b(TAC)$ if $TAC>min(C)$ or $TAC<max(C)$ 
+	
+	$\eta=1$ if $TAC>max(C)$ 
+
+	$\eta=cthBias$ if $TAC<min(C)$ 
 
 	\item Management Procedure
 	
@@ -65,7 +73,14 @@ sessionInfo()
 		
 \end{itemize}	
 
-\section{Results}
+The scenarios simulated try to give insights about the doubts raised during the discussion of the factors that could have an impact on the estimation of MSY and indirectly on catch surplus.
+
+\begin{itemize}
+	\item Underestimation of catches - which is being modelled through the introduction of bias in catches provided to the assessment model by the OEM. It reflects the situation where company owners under-report catches to the coastal state. 
+	\item Abundance index low quality - which is being modelled trough the introduction of bias and variability on the abundance index provided to the assessment model by the OEM. Bias models the effect of having surveys that don't cover the full distribution of the stock. A bias smaller than 1 reflects an underestimation of biomass and vice versa. It's common to use exploratory fishing surveys, which will most of the times look for hot spots of abundance and their estimates of abundance will most likely biased towards higher than reality abundances. On the other hand mixing surveys from different periods and carried out with several vessels, will increase the variability of the abundance index. 
+	\item Lag between assessments - is modelled trough the introduction of years without assessment during which the TAC is kept constant as computed on the last assessment. More sophisticated approaches could be implemented if time allows. The simulation assumes that lags between assessments are regular, which is not (always ?) the case. It shouldn't be difficult to implement irregular assessment periods, that will reflect a lack of strategy towards management advice.
+	\item Over-catch - it's implemented with two distinct Implementation Error Models (IEM), a constant ratio and a ratio that decreases linearly with the increase in TAC. The idea is that over-catch increases with the decrease in the TAC, which seems more realistic that keeping over-catch with a constant ratio.  
+\end{itemize}     
 
 \begin{table}[h]
 \caption{Simulation scenarios}
@@ -73,6 +88,8 @@ sessionInfo()
 latex(scn, longtable=TRUE, file="", first.hline.double=FALSE)
 @
 \end{table}
+
+\section{Results}
 
 \begin{figure}[H]
 \centering
@@ -117,6 +134,10 @@ plot(window(FLStocks(lst0), start=2000))
 \caption{Projections with bias on catches and index}
 \label{fig:2Bias}
 \end{figure}
+
+\section{Discussion}
+
+This simulation study considers a TAC management system. It's not clear what would happen in a effort management system. Most likely the IEM could be implemented through limitations in effort or changes in catchability. However, considering DGMARE's comments on the enforcement of logbooks and future e-logbooks, there is the expectation that catches can be controlled.
 
 \end{document}
 
