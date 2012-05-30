@@ -1,7 +1,7 @@
 mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window(rec(OM),
-    start = start))), CV = 0.3, Ftar = 0.75, Btrig = 0.75, Fmin = Ftar *
+    start = start))), CV = 0.2, Ftar = 0.75, Btrig = 0.75, Fmin = Ftar *
     0.1, Blim = Btrig * 1e-04, Bpct = 0.5, Fpct = 0.5, jk = FALSE,
-    bounds = NULL, aLag=1, maxHR=0.35, maxF=max(fbar(OM))*1.1, IEM="linear", cthBias=1, srvBias=1, seed=1234){
+    bounds = NULL, aLag=1, maxHR=0.35, maxF=2, IEM="linear", cthBias=1, srvBias=1, seed=1234){
 
 	#--------------------------------------------------------------------
 	# set year's info  
@@ -15,44 +15,55 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 	#	dtYr - last year with data which is the last year for which there 
 	#			are estimates (loop)
 	#	advYr - advice year, the year for which advice is being given (loop)     
+	#	maxF=max(fbar(OM))*1.1
 	#--------------------------------------------------------------------
 
+
+	#--------------------------------------------------------------------
+	# general settings
+	#--------------------------------------------------------------------
+	# define tempdir for admb to use for paralelization
+	bdir <- paste(tempdir(), runif(1,1,2), sep="/")
+	system(paste("mkdir", bdir, sep=" "))
+	# other variables required
 	set.seed(seed)
 	iniPyr <- start
 	lastPyr <- OM@range["maxyear"]
 	nPyr <- lastPyr-iniPyr+1
-
-	#--------------------------------------------------------------------
-	# not so sure this block of code is needed ... to be checked
-
-	# deal with iterations
-    nits <- c(OM = dims(OM)$iter, sr = dims(params(sr))$iter, rsdl = dims(srRsdl)$iter)
-    if (length(unique(nits)) >= 2 & !(1 %in% nits)) ("Stop, iters not '1 or n' in OM")
-    nits <- max(nits)
-
-	#stock(OM) = propagate(stock(OM), nits)
- 	if(dims(OM)$iter!=nits) stock(OM) <- propagate(stock(OM), nits)
-
-    bd <- as(OM, "FLBioDym") # <<< this bit is required
-    if (!is.null(bounds)) bd@bounds <- bounds
-    #bd = propagate(bd, nits)
-    index(bd) <- index(bd) * rlnorm(prod(dim(index(bd))), 0, CV) # ME NOT LIKE !!
-	#--------------------------------------------------------------------
-
-	# object to register TACs, start year catch taken from OM 
-	PARrec <- catch(bd)
-	PARrec <- FLCore::expand(PARrec, age=c("all", dimnames(params(bd))$params)) # hack to overcome exported method by reshape
-	dimnames(PARrec)[[1]][1] <- "TAC"	
-
 	# assessment years
 	aYrs <- seq(iniPyr, lastPyr, aLag)
 
+	#--------------------------------------------------------------------
+	# introduce OEM on historical data
+	#--------------------------------------------------------------------
+	bd <- as(OM, "FLBioDym") # <<< this bit is required
+      # abundance index variability
+      index(bd) <- index(bd)*rlnorm(prod(dim(index(bd))), 0, CV)
+      # abundance index bias
+	index(bd) <- index(bd)*runif(length(index(bd)), srvBias*0.95, srvBias*1.05)
+	# catch bias
+	catch(bd) <- catch(bd)*runif(length(catch(bd)), cthBias*0.95, cthBias*1.05)
+	# add bounds for BioDym	
+    	if (!is.null(bounds)) bd@bounds <- bounds
+
+	#--------------------------------------------------------------------
 	# IEM setup
+	#--------------------------------------------------------------------
 	cmin <- min(catch(OM))
 	cmax <- max(catch(OM))
-	iem <- lm(iem~catch, data=data.frame(catch=c(cmin,cmax),iem=c(cthBias,1)))
+	#iem <- lm(iem~catch, data=data.frame(catch=c(cmin,cmax),iem=c(cthBias,1)))
 
+	#--------------------------------------------------------------------
+	# object to register TACs, start year catch taken from OM 
+	#--------------------------------------------------------------------
+	PARrec <- catch(OM)
+	PARrec <- FLCore::expand(PARrec, age=c("all", "HCR:hr", paste("BDM", dimnames(params(bd))$params), sep=":")) # hack to overcome exported method by reshape
+	PARrec["hr"] <- catch(OM)/stock(OM) 
+	dimnames(PARrec)[[1]][1] <- "HCR:TAC"	
+
+	#--------------------------------------------------------------------
 	# Go !!
+	#--------------------------------------------------------------------
     for (iYr in iniPyr:(lastPyr-aLag)) {
         cat("===================", iYr, "===================\n")
 		# Is it assessment year ? if yes do your magic !
@@ -64,17 +75,17 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 			# OEM	
 	        bd <- window(bd, end = an(dtaYr))
 	        # abundance index variability
-	        index(bd)[,dtaYrs] <- stock(OM)[,dtaYrs] * rlnorm(prod(dim(index(bd)[,dtaYrs])), 0, CV)
+	        index(bd)[,dtaYrs] <- stock(OM)[,dtaYrs]*rlnorm(prod(dim(index(bd)[,dtaYrs])), 0, CV)
 	        # abundance index bias
-			index(bd)[,dtaYrs] <- index(bd)[,dtaYrs]*runif(length(index(bd)[,dtaYrs]), srvBias*0.95, srvBias*1.05)
-			# catch bias
+       	  index(bd)[,dtaYrs] <- index(bd)[,dtaYrs]*runif(length(index(bd)[,dtaYrs]), srvBias*0.95, srvBias*1.05)
+		  # catch bias
 	        catch(bd)[,dtaYrs] <- computeCatch(OM)[, dtaYrs]
 	        catch(bd)[,dtaYrs] <- catch(bd)[,dtaYrs]*runif(length(catch(bd)[,dtaYrs]), cthBias*0.95, cthBias*1.05)
 
             # MP
             # assessment
-            bd <- admbBD(bd)
-            PARrec[-1, ac(iYr)] <- c(params(bd)) 
+            bd <- admbBD(bd, dir=bdir)
+            PARrec[-c(1,2), ac(iYr)] <- c(params(bd)) 
 
 			# projections considering TAC was caught in iYr
 			# to deal with a missing feature in fwd the last year of data must also be included
@@ -86,11 +97,11 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 		        #hv <- hcrJK(bd, Ftar, Btrig, Fmin, Blim, Fpct, Bpct)
 		        warning("Using jk hcr requires checking.", immediate.=T)
 		    } else {
-		    	# the lag on the hcr method is between the advice year and the data year,
-		    	# so in the traditional "assessments every year" it's 2
+		    	# the lag on the hcr method is between the advice year and the data year, so it's 2
 		        hv <- hcr(bd, FLPar(Ftar = Ftar, Btrig = Btrig, Fmin = Fmin, Blim = Blim), lag=2)
 				# check F is not above maxF and replace if it is
-				hv[hv>maxF] <- maxHR
+				hv[hv>maxHR] <- maxHR
+				PARrec["hr", ac(iYr)] <- hv
 				tac <- TAC(bd, hv) # this is just hv*b
 		    }
 			# update TAC record, all advYrs get the same TAC, may need more options
@@ -107,19 +118,20 @@ mseBD <- function (OM, start, sr, srRsdl = FLQuant(1, dimnames = dimnames(window
 			# There may be better options like linking through effort
 
 			ie <- ctrl@trgtArray[2*(1:(aLag+1)), "val", ]
-			if(IEM=="linear"){
-				ie[ie>cmax & !is.na(ie)] <- 1
+			if(IEM=="linear" & cthBias!=1){
 				ie[ie<cmin & !is.na(ie)] <- cthBias
-				ie[ie>=cmin & ie<=cmax & !is.na(ie)] <- predict(iem, newdata=data.frame(catch=ie[ie>=cmin & ie<=cmax & !is.na(ie)]))
+				ie[ie>cmax & !is.na(ie)] <- 1
+				#ie[ie>=cmin & ie<=cmax & !is.na(ie)] <- predict(iem, newdata=data.frame(catch=ie[ie>=cmin & ie<=cmax & !is.na(ie)]))
+				ie[ie>=cmin & ie<=cmax & !is.na(ie)] <- cthBias + (ie[ie>=cmin & ie<=cmax & !is.na(ie)] - cmin)*(1-cthBias)/(cmax-cmin)
 			} else {
 				ie[] <- cthBias			
 			}
 			ctrl@trgtArray[2*(1:(aLag+1)), "val", ] <- ctrl@trgtArray[2*(1:(aLag+1)), "val", ]/runif(length(ie), ie*0.95, ie*1.05)
 
-
-			# OM
 			# limit on F to stabilize the simulations
 		    ctrl@trgtArray[2*(1:(aLag+1))+1, "max", ] <- maxF
+
+			# OM
 		    OM <- fwd(OM, ctrl = ctrl, sr = sr, sr.residuals = srRsdl) 
 
 		} else {

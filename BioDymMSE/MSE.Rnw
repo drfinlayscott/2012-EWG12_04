@@ -9,6 +9,14 @@
 \setlength{\parskip}{\medskipamount}
 \setlength{\parindent}{0pt}
 \begin{document}
+\newcommand{\bm}[1]{\mbox{\boldmath $#1$}}
+\newcommand{\func}[2]{#1 \Big( #2 \Big)}
+\newcommand{\HCR}[1]{\func{\text{HCR}}{#1}}
+\newcommand{\Unif}[1]{\func{\text{Uniform}}{#1}}
+\newcommand{\LN}[1]{\func{\text{logNormal}}{#1}}
+\newcommand{\intext}[1]{\quad \text{#1} \quad}
+\newcommand{\TAC}{\text{TAC}}
+\newcommand{\mybullet}{\textbullet \phantom{ }}
 \title{Surplus tests with MSE}
 \author{Ernesto Jardim\footnote{ernesto.jardim@jrc.ec.europa.eu} (JRC)\\ Iago Mosqueira (JRC) \\ Colin Millar (JRC)\\ Chato Osio (JRC)\\ Aymen Charef (JRC)}
 \maketitle
@@ -38,40 +46,41 @@ sessionInfo()
 \pagebreak
 \section{Methods}
 
-\begin{itemize}
-	\item Operating Model
+In the equations that follow, different scenarios can be simulated by varying: the TAC lag $\lambda$, yeild and survey bias parameters $\gamma$ and $\delta$, survey observation error $\sigma_I^2$, (log scale) recruitment variability $\sigma_R^2$ and autocorrelation in recruitment; the $u$ terms induce a uniform ± 5\% error in the bias parameters they multiply i.e.
 
-	$N_{t+1,a+1}=N_{t,a}e^{-Z}$
-	
-	$R_{t+1}=f(S_{t})\rho$ where $\rho \sim LN(0,\sigma_{R}^2)$ and $f$:{segreg,b\&h,b\&h+AR1}
+\begin{align*}
+  u_t, u'_t, u''_t &\sim \Unif{0.95,\ 1.05} \\
+  \intext{and} \gamma u_t &\sim \Unif{0.95\gamma,\ 1.05\gamma}
+\end{align*}
 
-	$C_{t,a}=\frac{F_{t,a}}{Z_{t,a}}(1-e^{-Z})N_{t,a}$
-	
-	$Y_{t}=\sum_a C_{t,a}\bar{W}_{t,a}$
-	
-	\item Implementation Error Model
-	
-	$Y_{t}=\frac{TAC_{t}}{\beta_{t}}$ where $\beta \sim U(0.95\eta, 1.05\eta)$ 
-	
-	$\eta=a+b(TAC)$ if $TAC>min(C)$ or $TAC<max(C)$ 
-	
-	$\eta=1$ if $TAC>max(C)$ 
-
-	$\eta=cthBias$ if $TAC<min(C)$ 
-
-	\item Management Procedure
-	
-	$TAC_{t}=HCR(\hat{\Theta}_{t} | F_{trgt}, B_{trg}, HR_{max})$
-	
-	$\hat{\Theta}=g(\hat{C}_{t}, \hat{I}_{t})$ where $g$: biomass dynamic model 
-	
-	\item Observation Error Model
-	
-	$\hat{C}_{t}=C_{t} \alpha_{t}$ where $\alpha \sim U(0.95cthBias, 1.05cthBias)$
-	
-	$\hat{I}_{t} = B_{t} \gamma_{t}$ where $\gamma \sim LN(\lambda, \sigma_{I}^2)$ and $\lambda \sim U(0.95srvBias, 1.05srvBias)$	
-		
-\end{itemize}	
+\begin{align*}
+  \intertext{\mybullet Operating Model}
+      N_{t+1,a+1} &= N_{ta}\exp(-Z_{ta}) \\
+      R_{t+1}     &= \func{\text{SRR}}{S_t} e_t
+        \intext{where} e_t \sim \LN{1,\ \sigma_R^2} 
+        \intext{and}   \text{SRR} = ( \text{b\&h, b\&h + AR1} ) \\ 
+      C_{ta}     &= \frac{F_{ta}}{Z_{ta}}\Big(1-\exp(-Z_{ta})\Big)N_{ta} \\
+	  Y_t       &= \sum_a C_{ta}W_{ta} \\
+	  S_t       &= \sum_a N_{ta}W_{ta}\text{Mat}_{ta} \\
+	  B_t       &= \sum_a N_{ta}W_{ta} \\
+\intertext{for each age and year: $F$ and $Z$ are fishing and total mortality, $N$ stock numbers, $C$ catch numbers, $W$ mean weights and $\text{Mat}$ maturity; for each year: $R$ is recruits, $Y$ catch yeild, $S$ spawing biomass and $B$ total biomass; while $\sigma_R^2$ is the variance about the stock recruit relationship SRR on the log scale.}	  
+  \intertext{\mybullet Implementation Error Model}
+      Y_t &= \frac{\TAC_t}{b_t u_t} \\
+      b_t &= \left\lbrace 
+        \begin{array}{ll}
+          \gamma   & \text{if} \quad \TAC_t < \min(\bm{Y}) \\
+          \gamma + \displaystyle\frac{\TAC_t - \min(\bm{Y})}{\max(\bm{Y}) - \min(\bm{Y})}(1 - \gamma) & \text{if} \quad \min(\bm{Y}) \leq \TAC_t \leq \max(\bm{Y}) \\
+           1                 & \text{if} \quad \TAC_t > \max(\bm{Y}) \\
+        \end{array} \right.
+\intertext{TAC is the total allowable catch and $\min(\bm{Y})$ and $\max(\bm{Y})$ are the minimum and maximum observed catch yeilds.}	 
+  \intertext{\mybullet Management Procedure}
+      \TAC_{t+\lambda} &= \HCR{\hat{B}_t, \hat{F}_t \Big| F_\text{trgt}, B_\text{trg}, HR_\text{max}} \intext{where} \lambda = ( 2, 3, 5 ) \\
+      (\hat{B}_t,\hat{F}_t) &= \func{\text{BDM}}{\hat{Y}_t, \hat{I}_t} 
+\intertext{HCR is the harvest control rule and BDM is a biomass dynamic model.}      
+  \intertext{\mybullet Observation Error Model}
+      \hat{Y}_t &= Y_t \times \gamma u'_t \\
+      \hat{I}_t &\sim \LN{B_t \times \delta u''_t, \ \sigma_I^2}
+\end{align*}
 
 The scenarios simulated try to give insights about the doubts raised during the discussion of the factors that could have an impact on the estimation of MSY and indirectly on catch surplus.
 

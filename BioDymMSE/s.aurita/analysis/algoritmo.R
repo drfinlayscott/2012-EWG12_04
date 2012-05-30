@@ -29,7 +29,7 @@ source("funs.R")
 # Simulation settings
 #====================================================================
 
-nits <- 500				# number of iterations
+nits <- 5				# number of iterations
 iniyr <- 2011 			# first year in projections
 lastyr <- 2061 			# last year in projections
 npyr <- lastyr-iniyr+1 	# number of years to project
@@ -117,7 +117,7 @@ plot(OM)
 
 # these bounds are related with ADMB adjusted to CECAF usage
 bounds <- bounds(FLBioDym())
-bounds["sigma","start"]=0.5
+bounds["sigma","start"]=0.50
 bounds["q",    "start"]=1.0
 bounds["q",    1]      =1.0
 bounds["b0",   c("phase","start")]=c(-1,0.2)
@@ -132,45 +132,60 @@ bounds["K",    c("phase","lower","upper","start")] = c(2, 1750, 7000, 2500)
 #====================================================================
 
 # scenarios #1
-scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="linear")
+scn01 <- expand.grid(Btrig=0.5, Ftar=1, aLag=c(1), srvBias=c(1), cthBias=c(1), IEM=c("linear", "cst")
 
+MSEsims00 <- mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=0.2, Btrig=0.5, Ftar=1, aLag=1, srvBias=1, cthBias=1, IEM="linear")
 
-MSEsims01 <- split(scn, scn)
-for(i in 1:nrow(scn)){
-	MSEsims01[[i]] <- mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"])
-}
+MSEsims00fixed <- mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=0.2, Btrig=0.5, Ftar=1, aLag=1, srvBias=1.5, cthBias=1, IEM="linear")
+
 
 save(MSEsims01, file="RData.MSEsims01")
 
 # scenarios #2
-scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="cst")
+scn02 <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="cst")
 
-MSEsims02 <- split(scn, scn)
-for(i in 1:nrow(scn)){
-	MSEsims02[[i]] <- mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"])
+MSEsims02 <- split(scn02, scn02)
+for(i in 1:nrow(scn02)){
+	MSEsims02[[i]] <- try(mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"], seed=22))
 }
 
 save(MSEsims02, file="RData.MSEsims02")
 
 # scenarios #3
-scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1.5, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="linear")
+scn03 <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1.5, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="linear")
 
-MSEsims03 <- split(scn, scn)
-for(i in 1:nrow(scn)){
-	MSEsims03[[i]] <- mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"])
+MSEsims03 <- split(scn03, scn03)
+for(i in 1:nrow(scn03)){
+	MSEsims03[[i]] <- try(mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"], seed=22))
 }
 
 save(MSEsims03, file="RData.MSEsims03")
 
 # scenarios #4
-scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1.5, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="cst")
+scn04 <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1.5, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="cst")
 
-MSEsims04 <- split(scn, scn)
-for(i in 1:nrow(scn)){
-	MSEsims04[[i]] <- mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"])
+MSEsims04 <- split(scn04, scn04)
+for(i in 1:nrow(scn04)){
+	MSEsims04[[i]] <- try(mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"], seed=22))
 }
 
 save(MSEsims04, file="RData.MSEsims04")
+
+# scenarios #5 b0=0.5
+scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="linear")
+
+MSEsims05 <- split(scn, scn)
+for(i in 1:nrow(scn)){
+	MSEsims05[[i]] <- try(mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"], seed=22))
+}
+
+# scenarios #6 p=1
+scn <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1,3,5), srvBias=c(0.5, 1, 1.5), cthBias=c(0.5, 1), IEM="linear")
+
+MSEsims06 <- split(scn, scn)
+for(i in 1:nrow(scn)){
+	MSEsims06[[i]] <- try(mseBD(OM=OM, start=iniyr, sr=srBH, srRsdl=srRsdl, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"], seed=22))
+}
 
 # paralel
 res0 <- foreach(i = 1:nrow(scn), .packages=c("FLCore", "FLash", "FLEDA", "MASS", "FLBioDym", "FLAdvice", "plyr"), .export="an") %dopar% mseBD(OM=OM, start=iniyr, sr=srBHAR1, srRsdl=srRsdlAR, bounds=bounds, CV=scn[i,"CV"], Btrig=scn[i,"Btrig"], Ftar=scn[i,"Ftar"], aLag=scn[i, "aLag"], srvBias=scn[i,"srvBias"], cthBias=scn[i,"cthBias"], IEM=scn[i,"IEM"])
@@ -179,13 +194,28 @@ res0 <- foreach(i = 1:nrow(scn), .packages=c("FLCore", "FLash", "FLEDA", "MASS",
 # Analysis of results
 #====================================================================
 
-MSEsumm01 <- mseSumm(MSEsims01, scn)
+#--------------------------------------------------------------------
+# Read results and process
+#--------------------------------------------------------------------
 
-xyplot(data~factor(year)|par, groups=qtl, data=subset(MSEsumm01, runid==13), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(lty=c(2,1,2), col=c(2,1,2))), type="l")
+load("out01/RData.MSEsims01")
+MSEsumm01 <- mseSumm(MSEsims01, scn01)
+
+
+xyplot(data~factor(year)|par, groups=qtl, data=subset(MSEsumm01, runid==15), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(lty=c(2,1,2), col=c(2,1,2))), type="l")
 
 xyplot(data~factor(year), groups=par, data=subset(MSEsumm01, runid==13 & par %in% c("TAC", "catch") & qtl==0.5), type="l")
 
-xyplot(data~factor(year)|scn, groups=par, data=subset(MSEsumm01, runid<19 & par %in% c("TAC", "catch") & qtl==0.5 & year > 2000), type="l", par.strip.text=list(cex=0.3))
+xyplot(data~factor(year)|scn, groups=par, data=subset(MSEsumm01, runid<19 & par %in% c("TAC", "catch") & qtl==0.5 & year > 2000), type="l", par.strip.text=list(cex=0.5), layout=c(6,3))
 
+
+
+
+> scn01 <- expand.grid(Btrig=0.5, CV=0.2, Ftar=1, aLag=c(1), srvBias=c(1), cthBias=c(1), IEM="linear")
+> mseSumm(FLStocks(MSEsims00fixed), scn01)->df0
+> xyplot(data~factor(year)|par, groups=qtl, data=subset(MSEsumm01, runid==15), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(lty=c(2,1,2), col=c(2,1,2))), type="l")
+Error in xyplot(data ~ factor(year) | par, groups = qtl, data = subset(MSEsumm01,  : 
+  error in evaluating the argument 'data' in selecting a method for function 'xyplot': Error in subset(MSEsumm01, runid == 15) : object 'MSEsumm01' not found
+> xyplot(data~factor(year)|par, groups=qtl, data=df0, scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(lty=c(2,1,2), col=c(2,1,2))), type="l")
 
 
