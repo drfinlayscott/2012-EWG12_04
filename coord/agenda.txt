@@ -1,20 +1,21 @@
 EWG 12 04 Agenda
 Day01 - afternoon
     Open
-        EJ: intro (15')
-    Clarification by DGMARE
-        P.Daniel: Clarification on objectives and ToR (15'+15')
+        EJ: intro (10')
+	  Aymen: STECF insights (10')
+        EJ: clarification of ToR by DGMARE (15')
         Discussion on how to tacle the ToR (30')
     Presentations
         M.Bertignac & Gascuel: Recap STECF & UNCLOS (15' + 15')
             A bit of history on the involvement of STECF on this issue
             What was reached until now.
-        EJ & Iago & Sakari: Catch surplus and biological surplus, disentangling the messy UNCLOS definition (15' + 15')
+        Ad Corten: Surplus computations in Mauritania (15' + 15')
         Sobrino and Eva: Assessment and advice in CECAF (15'+15')
             Data quality in terms of coverage and size of time series
             Assessment models
             Frequency of assessments
             Institutional settings
+	  Iago: Loosly replicating S.aurita and T.trecae population and exploitation dynamics (15'+15')
     Agreement on working methodology
         Subgroups & plenaries
         Raporteurs

@@ -1,0 +1,335 @@
+\documentclass[a4paper,english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{babel}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{amsmath}
+\usepackage[bottom]{footmisc}
+\geometry{verbose,a4paper,tmargin=3cm,bmargin=2cm,lmargin=2cm,rmargin=3cm}
+%\SweaveOpts{width=5.5, height=5.5}
+\setlength{\parskip}{\medskipamount}
+\setlength{\parindent}{0pt}
+\begin{document}
+\newcommand{\bm}[1]{\mbox{\boldmath $#1$}}
+\newcommand{\func}[2]{#1 \Big( #2 \Big)}
+\newcommand{\HCR}[1]{\func{\text{HCR}}{#1}}
+\newcommand{\Unif}[1]{\func{\text{Uniform}}{#1}}
+\newcommand{\LN}[1]{\func{\text{logNormal}}{#1}}
+\newcommand{\intext}[1]{\quad \text{#1} \quad}
+\newcommand{\TAC}{\text{TAC}}
+\newcommand{\mybullet}{\textbullet \phantom{ }}
+\title{Surplus tests with MSE}
+\author{Ernesto Jardim\footnote{ernesto.jardim@jrc.ec.europa.eu} (JRC)\\ Iago Mosqueira (JRC) \\ Colin Millar (JRC)\\ Chato Osio (JRC)\\ Aymen Charef (JRC)}
+\maketitle
+\begin{abstract}
+ToDo
+\end{abstract} 
+
+\pagebreak
+\section{Introduction}
+
+The MSE runs on a loosly simulation of the \emph{S.aurita} stock dynamics and exploitation but it can be adapted to other datasets. The OM is conditioned using CECAF's stock assessment results, life history parameters from Fishbase and a Beverton and Holt S/R. Three management procedures were tested. The usual MSY HCR, with a $B_{trigger}$ and a $F_{target}$, and an additional harvest rate limit $maxHR$. All is dealt in relative terms. A catch base HCR that keeps catch at the same level as the average of a specified period. A survey based HCR that reduces catches by 25\% if the average survey observations on a precified period are below the historical 10\% quantile and increases by 10 or 25\% if the average survey observations on a precified period are above the historical 90\% quantile. The Observation Error Model (OEM) introduces variability on the abundance index and bias both on the abundance index and catches. The Implementation Error Model (IEM) introduces bias on the TAC generating over-catches. The bias on catch, both on the OEM and IEM must be linked so that catches on the OM are of the same level.
+
+<<echo=FALSE, results=hide>>=
+library(FLAdvice)
+library(FLBioDym)
+library(plyr)
+library(FLCore)
+library(xtable)
+library(Hmisc)
+source("../analysis/funs.R")
+@
+
+<<>>=
+sessionInfo()
+@
+
+\pagebreak
+\section{Methods}
+
+\subsection{Management Strategies Evaluation (MSE)}
+
+In the equations that follow, different scenarios can be simulated by varying: the TAC lag $\lambda$, yeild and survey bias parameters $\gamma$ and $\delta$, survey observation error $\sigma_I^2$, (log scale) recruitment variability $\sigma_R^2$ and autocorrelation in recruitment; the $u$ terms induce a uniform 5\% error in the bias parameters they multiply i.e.
+
+\begin{align*}
+  u_t, u'_t, u''_t &\sim \Unif{0.95,\ 1.05} \\
+  \intext{and} \gamma u_t &\sim \Unif{0.95\gamma,\ 1.05\gamma}
+\end{align*}
+
+\begin{align*}
+  \intertext{\mybullet Operating Model}
+      N_{t+1,a+1} &= N_{ta}\exp(-Z_{ta}) \\
+      R_{t+1}     &= \func{\text{SRR}}{S_t} e_t
+        \intext{where} e_t \sim \LN{1,\ \sigma_R^2} 
+        \intext{and}   \text{SRR} = ( \text{b\&h, b\&h + AR1} ) \\ 
+      C_{ta}     &= \frac{F_{ta}}{Z_{ta}}\Big(1-\exp(-Z_{ta})\Big)N_{ta} \\
+	  Y_t       &= \sum_a C_{ta}W_{ta} \\
+	  S_t       &= \sum_a N_{ta}W_{ta}\text{Mat}_{ta} \\
+	  B_t       &= \sum_a N_{ta}W_{ta} \\
+\intertext{for each age and year: $F$ and $Z$ are fishing and total mortality, $N$ stock numbers, $C$ catch numbers, $W$ mean weights and $\text{Mat}$ maturity; for each year: $R$ is recruits, $Y$ catch yeild, $S$ spawing biomass and $B$ total biomass; while $\sigma_R^2$ is the variance about the stock recruit relationship SRR on the log scale.}	  
+  \intertext{\mybullet Implementation Error Model}
+      Y_t &= \frac{\TAC_t}{b_t u_t} \\
+      b_t &= \left\lbrace 
+        \begin{array}{ll}
+          \gamma   & \text{if} \quad \TAC_t < \min(\bm{Y}) \\
+          \gamma + \displaystyle\frac{\TAC_t - \min(\bm{Y})}{\max(\bm{Y}) - \min(\bm{Y})}(1 - \gamma) & \text{if} \quad \min(\bm{Y}) \leq \TAC_t \leq \max(\bm{Y}) \\
+           1                 & \text{if} \quad \TAC_t > \max(\bm{Y}) \\
+        \end{array} \right.
+\intertext{TAC is the total allowable catch and $\min(\bm{Y})$ and $\max(\bm{Y})$ are the minimum and maximum observed catch yeilds.}	 
+  \intertext{\mybullet Management Procedure}
+      \TAC_{t+\lambda} &= \HCR{\hat{B}_t, \hat{F}_t \Big| F_\text{trgt}, B_\text{trg}, HR_\text{max}} \intext{where} \lambda = ( 2, 3, 5 ) \\
+      (\hat{B}_t,\hat{F}_t) &= \func{\text{BDM}}{\hat{Y}_t, \hat{I}_t} 
+\intertext{HCR is the harvest control rule and BDM is a biomass dynamic model.}      
+  \intertext{\mybullet Observation Error Model}
+      \hat{Y}_t &= Y_t \times \gamma u'_t \\
+      \hat{I}_t &\sim \LN{B_t \times \delta u''_t, \ \sigma_I^2}
+\end{align*}
+
+\subsection{Management procedures}
+
+Three management procedures were tested. The traditional MSY HCR based on a Btrigger and a Ftarget. A catch base HCR that keeps catch at the same level as the average of a specified period. A survey based HCR that reduces catches by 25\% if the average survey observations on a precified period are below the historical 10\% quantile and increases by 10 or 25\% if the average survey observations on a precified period are above the historical 90\% quantile.  
+
+\subsection{Simulations}
+
+Simulations are run for a period of 50 years starting from the last assessment.
+
+<<>>=
+nits <- 150				# number of iterations
+iniyr <- 2011 			# first year in projections
+lastyr <- 2061 			# last year in projections
+npyr <- lastyr-iniyr+1 	# number of years to project
+srsd <- 0.2 			# sd for S/R
+@
+
+The scenarios simulated try to give insights about the doubts raised during the discussion of the factors that could have an impact on the estimation of MSY and indirectly on catch surplus.
+
+\begin{itemize}
+	\item Underestimation of catches - which is being modelled through the introduction of bias in catches provided to the assessment model by the OEM. It reflects the situation where company owners under-report catches to the coastal state. 
+	\item Abundance index low quality - which is being modelled trough the introduction of bias and variability on the abundance index provided to the assessment model by the OEM. Bias models the effect of having surveys that don't cover the full distribution of the stock. A bias smaller than 1 reflects an underestimation of biomass and vice versa. It's common to use exploratory fishing surveys, which will most of the times look for hot spots of abundance and their estimates of abundance will most likely biased towards higher than reality abundances. On the other hand mixing surveys from different periods and carried out with several vessels, will increase the variability of the abundance index. 
+	\item Lag between assessments - is modelled trough the introduction of years without assessment during which the TAC is kept constant as computed on the last assessment. More sophisticated approaches could be implemented if time allows. The simulation assumes that lags between assessments are regular, which is not (always ?) the case. It shouldn't be difficult to implement irregular assessment periods, that will reflect a lack of strategy towards management advice.
+	\item Over-catch - it's implemented with two distinct Implementation Error Models (IEM), a constant ratio and a ratio that decreases linearly with the increase in TAC. The idea is that over-catch increases with the decrease in the TAC, which seems more realistic that keeping over-catch with a constant ratio.  
+\end{itemize}     
+
+%<<>>=
+%scn <- rbind(
+%	expand.grid(Btrig=0.5, Ftar=0.75, maxHR=0.35, aLag=c(1,3,5), 
+%		srvBias=c(0.5, 1, 1.5), cthBias=c(0.5,1), IEM="linear"),
+%	expand.grid(Btrig=0.3, Ftar=1, maxHR=c(0.35, 1), aLag=c(1,3,5), 
+%		srvBias=c(0.5, 1, 1.5), cthBias=c(0.5,1), IEM="linear")
+%	)
+%@
+%
+%\pagebreak
+%
+%\begin{table}[H]
+%\caption{Management scenarios}
+%<<results=tex, echo=FALSE>>=
+%latex(scn, longtable=TRUE, file="", first.hline.double=FALSE)
+%@
+%\end{table}
+
+\pagebreak
+
+\section{Results}
+
+\subsection{Operating Model}
+
+<<results=hide>>=
+#--------------------------------------------------------------------
+# Sardinella data
+#--------------------------------------------------------------------
+nc <- read.table('../data/nc_sar.dat', header=TRUE)
+ia <- read.table('../data/cpue_sar.dat', header=TRUE)
+ca <- FLQuant(nc$catch, dimnames=list(age='all', year=nc$year))
+cp <- FLQuant(c(rep(NA, 7), ia$cpue), dimnames=list(age='all', year=nc$year))
+
+#--------------------------------------------------------------------
+# gislasim and projection
+#--------------------------------------------------------------------
+# Use CECAF SA B0 as starting point
+par <- as(data.frame(linf=28.5, k=0.8, t0=-0.1, s=0.8, v=1750, a50=1), 'FLPar')
+sar <- lh(gislasim(par), range=c(min=1, max=8, minfbar=1, maxfbar=6))
+
+# stk with initial F closest to estimated HR
+saa <- as(sar, 'FLStock')
+saa <- saa[,7]
+dimnames(saa) <- list(year=1989)
+
+# prepare for projection
+saa <- window(saa, FLBRP=sar, end=iniyr-1)
+
+# projection control
+trg <- fwdControl(data.frame(year=1990:2010, val=c(ca), quantity="catch"))
+
+# catch projection
+saa <- fwd(saa, trg, sr=list(model="bevholt", params=params(sar)))
+
+name(saa) <- "SAA"
+desc(saa) <- "Simulated Sardinella aurita, partly conditioned on CECAF SA 2010"
+
+# CECAF SA results
+sa <- read.table('../data/sa.dat', sep='\t', header=T)
+@
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+plot(sa$ssb~sa$year, type="l", par.strip.text=list(cex=0.5), ylim=c(0,2000), main="SSB (black line = CECAF, red line = simulation)")
+lines(c(ssb(saa))[-1]~sa$year, col=2)
+@
+\caption{S.aurita loose simulation}
+\label{fig:sar}
+\end{figure}
+
+<<results=hide>>=
+#====================================================================
+# Conditioning
+#====================================================================
+
+om <- saa
+srBH <- as.FLSR(om,model="bevholt")
+params(srBH) <- params(sar)
+
+# Residuals - simulate residuals as lognormal with sd=srsd
+set.seed(123)
+srRsdl <- FLQuant(rlnorm(npyr*nits, 0, srsd), 
+	dimnames=list(year=srBH@range["minyear"]:lastyr, iter=1:nits)) 
+
+#--------------------------------------------------------------------
+# create OM object
+# Note: this object is projected at Fsq and the values for the first
+#	intermediate year are used in the projections
+#--------------------------------------------------------------------
+
+# window with FLBRP expands the object including weights, etc, the 
+# brp doesn't seem to do anything except dispatching. it replaces "stf". 
+OM <- window(om, FLBRP=sar, end=lastyr)
+
+# trick to get iterations, start with M and fwd will add to other slots
+m(OM) <- propagate(m(OM),nits)
+
+# project to the end of projections at last year F level
+ctrl <- fwdControl(data.frame(year=iniyr:lastyr, quantity="f", 
+	val=c(fbar(om)[,ac(om@range["maxyear"])])*rep(1,npyr)))
+OM <- fwd(OM, ctrl=ctrl, sr=srBH, sr.residuals=srRsdl)
+@
+
+\subsection{Management Scenarios}
+
+<<echo=FALSE>>=
+load("RData.mse")
+@
+
+\begin{table}[H]
+\caption{Management scenarios}
+<<results=tex, echo=FALSE>>=
+latex(scn, longtable=TRUE, file="", first.hline.double=FALSE)
+@
+\end{table}
+
+\pagebreak
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=qtl, data=subset(base.summ, ref=="base"), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(lty=c(2,1,2), col=c(2,1,2))), type="l", par.strip.text=list(cex=0.5), ylab="year")
+@
+\caption{Base case results}
+\label{fig:base}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "aLag3", "aLag5") & qtl==0.5 & par %in% c("ssb", "fbar", "catch", "rec")), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(3:1)), superpose.symbol=list(col=c(3,2,0), pch=19, cex=0.3)), type="b", ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=3))
+@
+\caption{Assessment lag effect, 1, 3 and 5 year lag between assessments}
+\label{fig:alag}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "cthBias0.5") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(1,2))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=2))
+@
+\caption{Underreporting effect, bias=0.5}
+\label{fig:cthBias}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "srvBias0.5", "srvBias1.5") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(1:3))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=3))
+@
+\caption{Survey coverage effect, bias=0.5, 1.5}
+\label{fig:srvBias}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "srv", "cth") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(1:3))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=3))
+@
+\caption{Alternative management procedures, survey and mean catch}
+\label{fig:mp}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "maxHR1") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(1,2))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=2))
+@
+\caption{Maximum harvest rate effect}
+\label{fig:maxHR}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "Btrig1", "Ftar1") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(1:3))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=3))
+@
+\caption{HCR parameters effect, Btrigger=1, Ftarget=1}
+\label{fig:hcr}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "b0.5") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(2,1))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=2))
+@
+\caption{Initial exploitation effect (b0)}
+\label{fig:b0.5}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "srv", "srvSimetric") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(1:3))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=3))
+@
+\caption{Survey management procedures with simetric multipliers}
+\label{fig:srvSim}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+<<fig=TRUE, echo=FALSE>>=
+xyplot(data~year|par, groups=ref, data=subset(base.summ, ref %in% c("base", "cthBias0.5", "iemCts") & qtl==0.5), scales=list(y=list(relation="free")), par.settings=list(superpose.line=list(col=c(1:3))), type="l", par.strip.text=list(cex=0.5), ylab="year", auto.key=list(lines=TRUE, points=FALSE, columns=3))
+@
+\caption{IEM effect, constant or linear}
+\label{fig:iem}
+\end{figure}
+
+\section{Discussion}
+
+This simulation study considers a TAC management system. It's not clear what would happen in a effort management system. Most likely the IEM could be implemented through limitations in effort or changes in catchability. However, considering DGMARE's comments on the enforcement of logbooks and future e-logbooks, there is the expectation that catches can be controlled.
+
+\section{Source code}
+
+<<>>=
+mseBD
+@
+
+\end{document}
+
